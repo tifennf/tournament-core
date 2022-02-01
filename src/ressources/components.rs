@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{PLAYER_AMOUNT, POOL_AMOUNT};
 
-use super::player::PlayerVerified;
+use super::player::{MatchPlayer, Player};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct DiscordName {
@@ -43,21 +43,26 @@ impl DiscordName {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pool {
-    pub player_list: HashSet<PlayerVerified>,
-
-    id: usize,
-    amount: PoolAmount,
+    pub list: HashSet<Player>,
+    pub id: usize,
+    pub amount: PoolAmount,
+    pub round: Round,
 }
 
 impl Pool {
-    pub fn new(id: usize, amount: usize) -> Pool {
+    pub fn new(id: usize, amount: usize, round: Round) -> Pool {
         let amount = PoolAmount(amount);
 
         Pool {
-            player_list: HashSet::new(),
+            list: HashSet::new(),
             id,
             amount,
+            round,
         }
+    }
+
+    pub fn contains_puuid(&self, puuid: &str) -> bool {
+        self.list.iter().any(|player| player.puuid == puuid)
     }
 }
 
@@ -87,44 +92,38 @@ impl PoolAmount {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PlayerList {
-    pub list: HashSet<PlayerVerified>,
-    pub max_amount: PlayerAmount,
-    pub current_amount: usize,
+#[derive(Debug, Deserialize)]
+pub struct MatchMetadata {
+    data_version: String,
+    match_id: String,
+    pub participants: Vec<String>,
 }
 
-impl PlayerList {
-    pub fn new(max_amount: usize) -> Result<Self, &'static str> {
-        let amount = PlayerAmount::new(max_amount)?;
-        let list = HashSet::new();
-        let current_amount = list.len();
+#[derive(Debug, Deserialize)]
+pub struct MatchInfo {
+    pub participants: Vec<MatchPlayer>,
+}
 
-        Ok(Self {
-            list,
-            max_amount: amount,
-            current_amount,
-        })
-    }
+#[derive(Debug, Deserialize)]
+pub struct MatchData {
+    pub metadata: MatchMetadata,
+    pub info: MatchInfo,
+}
 
-    pub fn insert(&mut self, player: PlayerVerified) -> bool {
-        let max_len = self.max_amount.0;
-        let list_len = self.list.len();
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub enum Round {
+    FirstRound,
+    Round(u8),
+}
 
-        let condition = list_len < max_len && self.list.insert(player);
-        if condition {
-            self.current_amount = self.list.len()
-        }
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct Placement {
+    pub place: u8,
+    pub round: Round,
+}
 
-        condition
-    }
-
-    pub fn remove(&mut self, player: PlayerVerified) -> bool {
-        let condition = self.list.remove(&player);
-        if condition {
-            self.current_amount = self.list.len()
-        }
-
-        condition
+impl Placement {
+    pub fn new(place: u8, round: Round) -> Self {
+        Placement { place, round }
     }
 }
