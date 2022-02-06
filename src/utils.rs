@@ -1,16 +1,6 @@
-use std::{
-    borrow::BorrowMut,
-    cmp::Ordering,
-    collections::{HashMap, HashSet},
-    fs,
-    io::{BufReader, BufWriter, Write},
-    sync::{LockResult, MutexGuard},
-};
+use std::collections::HashSet;
 
 use axum::{http::StatusCode, routing::MethodRouter, Router};
-use rand::{prelude::SliceRandom, thread_rng};
-
-use tracing::log::debug;
 
 use crate::{
     ressources::{
@@ -53,7 +43,7 @@ async fn give_points(pool: &Pool, match_data: MatchData) -> Result<HashSet<Playe
         .filter(|p| pool.contains_puuid(&p.puuid))
         .collect();
 
-    if match_players.len() == 0 {
+    if match_players.is_empty() {
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
     }
 
@@ -67,7 +57,7 @@ async fn give_points(pool: &Pool, match_data: MatchData) -> Result<HashSet<Playe
                 .find(|player| player.puuid == p.puuid)
                 .unwrap();
 
-            let placement = Placement::new(p.placement, pool.round.clone());
+            let placement = Placement::new(p.placement, pool.round);
             let points = parse_points(placement);
 
             player.points += points;
@@ -79,7 +69,7 @@ async fn give_points(pool: &Pool, match_data: MatchData) -> Result<HashSet<Playe
     Ok(player_list)
 }
 
-pub async fn parse_pool_points(pool_list: &Vec<Pool>) -> Result<HashSet<Player>, StatusCode> {
+pub async fn parse_pool_points(pool_list: &[Pool]) -> Result<HashSet<Player>, StatusCode> {
     let mut result = Err(StatusCode::INTERNAL_SERVER_ERROR);
 
     for pool in pool_list {
@@ -101,7 +91,7 @@ pub async fn parse_pool_points(pool_list: &Vec<Pool>) -> Result<HashSet<Player>,
                         .await
                         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-                    result = Ok(give_points(&pool, match_data).await?);
+                    result = Ok(give_points(pool, match_data).await?);
                 }
             }
             None => result = Err(StatusCode::NOT_FOUND),
@@ -129,8 +119,4 @@ pub fn sort_players(player_list: HashSet<Player>) -> HashSet<Player> {
     let player_list: HashSet<Player> = player_list.into_iter().collect();
 
     player_list
-}
-
-fn compare_player_top(p1: Player, p2: Player) -> Ordering {
-    todo!()
 }

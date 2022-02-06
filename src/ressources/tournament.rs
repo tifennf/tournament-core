@@ -1,12 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
-use tracing::log::debug;
 
-use super::{
-    components::{DiscordName, MatchData, Pool},
-    player::Player,
-};
+use super::{components::Pool, player::Player};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TournamentMetadata {
@@ -41,17 +37,8 @@ impl Tournament {
         }
     }
 
-    pub fn add_points(&mut self, player_list: HashSet<Player>) {
+    pub fn update(&mut self, player_list: HashSet<Player>) {
         self.history.push(self.pool_list.clone());
         self.player_list = player_list;
     }
-
-    // pub fn next_round(&mut self, pool)
 }
-
-// #[derive(Debug, Clone, Serialize, Deserialize)]
-// pub enum TournamentState {
-//     Init,
-//     Running(u8),
-//     Done,
-// }

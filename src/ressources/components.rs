@@ -1,8 +1,8 @@
-use std::{collections::HashSet, slice::Chunks};
+use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{PLAYER_AMOUNT, POOL_AMOUNT, POOL_SIZE};
+use crate::{POOL_AMOUNT, POOL_SIZE};
 
 use super::player::{MatchPlayer, Player};
 
@@ -64,7 +64,7 @@ impl Pool {
     pub fn from_slice(player_slice: &[Player], id: usize, round: u8) -> Pool {
         let amount = PoolAmount(POOL_SIZE);
 
-        let list = player_slice.iter().map(|p| p.clone()).collect();
+        let list = player_slice.iter().cloned().collect();
 
         Pool {
             list,
@@ -78,19 +78,6 @@ impl Pool {
         self.list.iter().any(|player| player.puuid == puuid)
     }
 }
-
-// #[derive(Debug, Clone, Serialize, Deserialize)]
-// pub struct PlayerAmount(pub usize);
-
-// impl PlayerAmount {
-//     pub fn new(amount: usize) -> Result<Self, &'static str> {
-//         if !PLAYER_AMOUNT.contains(&amount) {
-//             return Err("Invalid player amount");
-//         }
-
-//         Ok(Self(amount))
-//     }
-// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PoolAmount(usize);
