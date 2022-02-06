@@ -1,8 +1,8 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, slice::Chunks};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{PLAYER_AMOUNT, POOL_AMOUNT};
+use crate::{PLAYER_AMOUNT, POOL_AMOUNT, POOL_SIZE};
 
 use super::player::{MatchPlayer, Player};
 
@@ -46,11 +46,11 @@ pub struct Pool {
     pub list: HashSet<Player>,
     pub id: usize,
     pub amount: PoolAmount,
-    pub round: Round,
+    pub round: u8,
 }
 
 impl Pool {
-    pub fn new(id: usize, amount: usize, round: Round) -> Pool {
+    pub fn new(id: usize, amount: usize, round: u8) -> Pool {
         let amount = PoolAmount(amount);
 
         Pool {
@@ -61,23 +61,36 @@ impl Pool {
         }
     }
 
+    pub fn from_slice(player_slice: &[Player], id: usize, round: u8) -> Pool {
+        let amount = PoolAmount(POOL_SIZE);
+
+        let list = player_slice.iter().map(|p| p.clone()).collect();
+
+        Pool {
+            list,
+            amount,
+            id,
+            round,
+        }
+    }
+
     pub fn contains_puuid(&self, puuid: &str) -> bool {
         self.list.iter().any(|player| player.puuid == puuid)
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PlayerAmount(pub usize);
+// #[derive(Debug, Clone, Serialize, Deserialize)]
+// pub struct PlayerAmount(pub usize);
 
-impl PlayerAmount {
-    pub fn new(amount: usize) -> Result<Self, &'static str> {
-        if !PLAYER_AMOUNT.contains(&amount) {
-            return Err("Invalid player amount");
-        }
+// impl PlayerAmount {
+//     pub fn new(amount: usize) -> Result<Self, &'static str> {
+//         if !PLAYER_AMOUNT.contains(&amount) {
+//             return Err("Invalid player amount");
+//         }
 
-        Ok(Self(amount))
-    }
-}
+//         Ok(Self(amount))
+//     }
+// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PoolAmount(usize);
@@ -110,20 +123,14 @@ pub struct MatchData {
     pub info: MatchInfo,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
-pub enum Round {
-    FirstRound,
-    Round(u8),
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Placement {
     pub place: u8,
-    pub round: Round,
+    pub round: u8,
 }
 
 impl Placement {
-    pub fn new(place: u8, round: Round) -> Self {
+    pub fn new(place: u8, round: u8) -> Self {
         Placement { place, round }
     }
 }
