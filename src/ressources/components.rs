@@ -92,13 +92,3 @@ impl Placement {
         Placement { place, round }
     }
 }
-
-#[derive(Debug, Deserialize)]
-pub struct Config {
-    pub riot: RiotConfig,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct RiotConfig {
-    pub api_key: String,
-}

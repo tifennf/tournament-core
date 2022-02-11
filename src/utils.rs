@@ -1,10 +1,10 @@
-use std::{collections::HashSet, fs};
+use std::collections::HashSet;
 
 use axum::{http::StatusCode, routing::MethodRouter, Router};
 
 use crate::{
     ressources::{
-        components::{Config, MatchData, Placement, Pool},
+        components::{MatchData, Placement, Pool},
         player::{MatchPlayer, Player},
     },
     PLACEMENT_POINTS, POOL_SIZE,
@@ -122,10 +122,4 @@ pub fn sort_players(player_list: HashSet<Player>) -> HashSet<Player> {
     let player_list: HashSet<Player> = player_list.into_iter().collect();
 
     player_list
-}
-
-pub fn get_config() -> Config {
-    let file = fs::read_to_string("./config.toml").unwrap();
-
-    toml::from_str(&file).unwrap()
 }

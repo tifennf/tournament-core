@@ -1,2 +1,6 @@
+[server]
+ip = [127,0,0,1]
+port = 3024
+
 [riot]
 api_key = "RGAPI-c1cf5b58-fa9d-44fc-9041-142b7b5aa151"

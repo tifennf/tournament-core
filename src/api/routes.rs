@@ -5,10 +5,8 @@ use reqwest::StatusCode;
 use tokio::sync::Mutex;
 
 use crate::{
-    ressources::{
-        components::Config,
-        tournament::{Tournament, TournamentMetadata},
-    },
+    config::Config,
+    ressources::tournament::{Tournament, TournamentMetadata},
     utils::{make_pools, parse_pool_points, sort_players},
 };
 

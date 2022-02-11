@@ -5,12 +5,13 @@ use axum::{
     routing::{get, post},
     AddExtensionLayer, Router,
 };
+use config::Config;
 use ressources::tournament::Tournament;
 use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;
-use utils::get_config;
 
 pub mod api;
+pub mod config;
 pub mod ressources;
 pub mod utils;
 
@@ -19,10 +20,10 @@ pub const PLAYER_AMOUNT: [usize; 4] = [8, 16, 32, 64];
 pub const PLACEMENT_POINTS: [u16; 8] = [8, 7, 6, 5, 4, 3, 2, 1];
 pub const POOL_SIZE: usize = 8;
 
-pub async fn run(addr: &SocketAddr) {
+pub async fn run(addr: &SocketAddr, config: Config) {
     let state = Arc::new(Mutex::new(None::<Tournament>));
 
-    let api_key = Arc::new(get_config());
+    let api_key = Arc::new(config);
 
     let app = Router::new()
         .route("/info", get(info))
