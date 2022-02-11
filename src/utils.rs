@@ -1,13 +1,13 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, fs};
 
 use axum::{http::StatusCode, routing::MethodRouter, Router};
 
 use crate::{
     ressources::{
-        components::{MatchData, Placement, Pool},
+        components::{Config, MatchData, Placement, Pool},
         player::{MatchPlayer, Player},
     },
-    API_KEY, PLACEMENT_POINTS, POOL_SIZE,
+    PLACEMENT_POINTS, POOL_SIZE,
 };
 
 pub fn route(path: &str, method_router: MethodRouter) -> Router {
@@ -20,17 +20,17 @@ fn parse_points(placement: Placement) -> u16 {
     PLACEMENT_POINTS[place - 1]
 }
 
-async fn puuid_url(puuid: &str, count: u8) -> String {
+async fn puuid_url(puuid: &str, count: u8, api_key: &str) -> String {
     format!(
         "https://europe.api.riotgames.com/tft/match/v1/matches/by-puuid/{}/ids?count={}&api_key={}",
-        puuid, count, API_KEY
+        puuid, count, api_key
     )
 }
 
-async fn match_id_url(match_id: String) -> String {
+async fn match_id_url(match_id: String, api_key: &str) -> String {
     format!(
         "https://europe.api.riotgames.com/tft/match/v1/matches/{}?api_key={}",
-        match_id, API_KEY
+        match_id, api_key
     )
 }
 
@@ -69,7 +69,10 @@ async fn give_points(pool: &Pool, match_data: MatchData) -> Result<HashSet<Playe
     Ok(player_list)
 }
 
-pub async fn parse_pool_points(pool_list: &[Pool]) -> Result<HashSet<Player>, StatusCode> {
+pub async fn parse_pool_points(
+    pool_list: &[Pool],
+    api_key: &str,
+) -> Result<HashSet<Player>, StatusCode> {
     let mut result = Err(StatusCode::INTERNAL_SERVER_ERROR);
 
     for pool in pool_list {
@@ -77,13 +80,13 @@ pub async fn parse_pool_points(pool_list: &[Pool]) -> Result<HashSet<Player>, St
 
         match player {
             Some(player) => {
-                let url = puuid_url(&player.puuid, 1).await;
+                let url = puuid_url(&player.puuid, 1, api_key).await;
 
                 let res = reqwest::get(url).await.unwrap();
                 let match_id = res.json::<Vec<String>>().await.unwrap();
 
                 for id in match_id {
-                    let url = match_id_url(id).await;
+                    let url = match_id_url(id, api_key).await;
 
                     let res = reqwest::get(url).await.unwrap();
                     let match_data = res
@@ -119,4 +122,10 @@ pub fn sort_players(player_list: HashSet<Player>) -> HashSet<Player> {
     let player_list: HashSet<Player> = player_list.into_iter().collect();
 
     player_list
+}
+
+pub fn get_config() -> Config {
+    let file = fs::read_to_string("./config.toml").unwrap();
+
+    toml::from_str(&file).unwrap()
 }

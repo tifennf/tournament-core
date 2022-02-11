@@ -5,13 +5,17 @@ use reqwest::StatusCode;
 use tokio::sync::Mutex;
 
 use crate::{
-    ressources::tournament::{Tournament, TournamentMetadata},
+    ressources::{
+        components::Config,
+        tournament::{Tournament, TournamentMetadata},
+    },
     utils::{make_pools, parse_pool_points, sort_players},
 };
 
 use super::schemas::TournamentInfo;
 
 type State = Arc<Mutex<Option<Tournament>>>;
+type ServerConfig = Arc<Config>;
 
 pub async fn init(
     Extension(state): Extension<State>,
@@ -33,13 +37,14 @@ pub async fn init(
 }
 pub async fn next_round(
     Extension(state): Extension<State>,
+    Extension(config): Extension<ServerConfig>,
 ) -> Result<Json<Tournament>, StatusCode> {
     let mut state = state.lock().await;
 
     if let Some(ref mut tournament) = *state {
         tournament.round += 1;
 
-        let player_list = parse_pool_points(&tournament.pool_list)
+        let player_list = parse_pool_points(&tournament.pool_list, &config.riot.api_key)
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 

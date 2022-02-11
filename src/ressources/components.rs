@@ -12,35 +12,6 @@ pub struct DiscordName {
     pub tag: String,
 }
 
-impl DiscordName {
-    pub fn new(name: String, tag: u16) -> Result<Self, &'static str> {
-        if tag > 9999 {
-            return Err("Invalid discord tag");
-        }
-
-        let tag = if tag < 1000 {
-            let mut tag = tag.to_string();
-
-            let mut i = 0;
-
-            while tag.len() < 4 {
-                tag.insert(i, '0');
-                i += 1;
-            }
-
-            tag
-        } else {
-            tag.to_string()
-        };
-
-        Ok(Self { name, tag })
-    }
-
-    pub fn get_full_name(&self) -> String {
-        format!("{}#{}", self.name, self.tag)
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pool {
     pub list: HashSet<Player>,
@@ -120,4 +91,14 @@ impl Placement {
     pub fn new(place: u8, round: u8) -> Self {
         Placement { place, round }
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Config {
+    pub riot: RiotConfig,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RiotConfig {
+    pub api_key: String,
 }
