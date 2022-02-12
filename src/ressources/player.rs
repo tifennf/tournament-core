@@ -1,4 +1,5 @@
 use super::components::{DiscordName, Placement};
+
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
 

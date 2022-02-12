@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use axum::{http::StatusCode, routing::MethodRouter, Router};
+use axum::http::StatusCode;
 
 use crate::{
     ressources::{
@@ -9,10 +9,6 @@ use crate::{
     },
     PLACEMENT_POINTS, POOL_SIZE,
 };
-
-pub fn route(path: &str, method_router: MethodRouter) -> Router {
-    Router::new().route(path, method_router)
-}
 
 fn parse_points(placement: Placement) -> u16 {
     let place = placement.place as usize;
