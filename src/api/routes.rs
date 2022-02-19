@@ -20,7 +20,7 @@ pub async fn init(
     Json(data): Json<TournamentInfo>,
 ) -> Json<Option<Tournament>> {
     let metadata = TournamentMetadata {
-        name: "test".to_string(),
+        name: data.name,
         player_amount: data.player_list.len(),
         pool_amount: data.pool_list.len(),
     };

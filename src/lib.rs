@@ -23,8 +23,10 @@ pub const POOL_SIZE: usize = 8;
 pub async fn run(addr: &SocketAddr, config: Config) {
     let state = Arc::new(Mutex::new(None::<Tournament>));
 
+    // clef api riot
     let api_key = Arc::new(config);
 
+    // routing de l'api du service, 3 routes
     let app = Router::new()
         .route("/info", get(info))
         .route("/init", post(init))
@@ -33,6 +35,7 @@ pub async fn run(addr: &SocketAddr, config: Config) {
         .layer(AddExtensionLayer::new(state))
         .layer(AddExtensionLayer::new(api_key));
 
+    // lance le server
     axum::Server::bind(addr)
         .serve(app.into_make_service())
         .await

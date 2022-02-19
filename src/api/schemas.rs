@@ -6,6 +6,7 @@ use crate::ressources::{components::Pool, player::Player};
 
 #[derive(Debug, Deserialize)]
 pub struct TournamentInfo {
+    pub name: String,
     pub pool_list: Vec<Pool>,
     pub player_list: HashSet<Player>,
 }
